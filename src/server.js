@@ -1,21 +1,20 @@
 import express from "express";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
+import taskRoute from "./routes/taskRoute.js";
 
-import applicationRoutes from "./routes/applicationRoutes.js";
 
 dotenv.config();
-connectDB()
 
 const app=express()
 
 app.use(express.json());
 app.use(cookieParser());
 
-app.use("/api/applications",applicationRoutes)
+app.use("/api/tasks", taskRoute)
 
 
-const PORT=process.env.PORT || 3000
+const PORT=process.env.PORT || 3001
 
 const server =app.listen(PORT,()=>{
     console.log(`Server is running on port ${PORT}`)
