@@ -1,8 +1,9 @@
 import jwt from "jsonwebtoken";
 
-const generateToken = (userId,res) => {
+const generateToken = (userId,res,role) => {
     const payload = {
         id: userId,
+        role
     };
     // Return the token (this would typically use a library like jsonwebtoken)
 

@@ -27,13 +27,17 @@ const registerUser = async (req, res) => {
       name,
       email,
       password: hashedPassword,
+      role:"User"
     });
 
-    const token = generateToken(user._id, res);
+    const token = generateToken(user._id, res,user.role);
 
     res.status(201).json({
       id: user._id,
-      username: user.username,
+      name:user.name, 
+      email: user.email,
+      role:user.role
+
     });
   } catch (error) {
     console.error("Error registering user:", error);
@@ -66,7 +70,7 @@ const loginUser = async (req, res) => {
                 error: "Invalid username or password"
             });
         }
-        const token = generateToken(user.id,res);
+        const token = generateToken(user.id,res,user.role);
 
         res.status(200).json({
             message: "Login successful",
