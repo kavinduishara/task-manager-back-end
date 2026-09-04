@@ -70,13 +70,15 @@ const loginUser = async (req, res) => {
                 error: "Invalid username or password"
             });
         }
-        const token = generateToken(user.id,res,user.role);
+        const token = generateToken(user._id,res,user.role);
 
         res.status(200).json({
             message: "Login successful",
             user: {
                 id: user.id,
-                username: user.username
+                name: user.name,
+                email:user.email,
+                role:user.role
             },
         });
 
