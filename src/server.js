@@ -3,8 +3,10 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import taskRoute from "./routes/taskRoute.js";
 import authRoute from "./routes/authRoute.js";
+import adminRoute from "./routes/adminRoute.js";
 import dbConnect from "./config/dbConnect.js";
 import authMiddleware from "./middleware/authMiddleware.js";
+import rbacMiddleware from "./middleware/rbacMiddleware.js";
 
 
 dotenv.config();
@@ -20,6 +22,7 @@ app.use("/api/auth",authRoute)
 
 app.use(authMiddleware)
 app.use("/api/tasks", taskRoute)
+app.use("/api/admin",rbacMiddleware("Admin"),adminRoute)
 
 
 
