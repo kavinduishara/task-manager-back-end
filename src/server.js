@@ -2,9 +2,12 @@ import express from "express";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import taskRoute from "./routes/taskRoute.js";
+import dbConnect from "./config/dbConnect.js";
 
 
 dotenv.config();
+
+dbConnect()
 
 const app=express()
 
