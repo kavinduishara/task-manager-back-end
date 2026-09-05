@@ -3,10 +3,12 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import cors from "cors"
 
-import taskRoute from "./routes/taskRoute.js";
-import authRoute from "./routes/authRoute.js";
 import dbConnect from "./config/dbConnect.js";
 import authMiddleware from "./middleware/authMiddleware.js";
+
+import taskRoute from "./routes/taskRoute.js";
+import authRoute from "./routes/authRoute.js";
+import usersRoute from "./routes/usersRoute.js";
 
 
 dotenv.config();
@@ -30,6 +32,7 @@ app.use("/api/auth",authRoute)
 
 app.use(authMiddleware)
 app.use("/api/tasks", taskRoute)
+app.use("/api/users", usersRoute)
 
 
 
