@@ -54,6 +54,8 @@ export const addTasks = async (req, res) => {
     const {
       title,
       description,
+      priority,
+      flag,
       status,
       assignee,
       dueDate,
@@ -61,9 +63,10 @@ export const addTasks = async (req, res) => {
 
     const requestedUser = req.user;
 
-    if (!title || !description || !status) {
+    if (!title || !description || !priority || !flag || !status) {
       return res.status(400).json({
-        message: "Title, description and status are required",
+        message:
+          "Title, description, priority, flag and status are required",
       });
     }
 
@@ -92,6 +95,8 @@ export const addTasks = async (req, res) => {
     const task = await Task.create({
       title,
       description,
+      priority,
+      flag,
       status,
       assignee,
       dueDate,
@@ -121,6 +126,8 @@ export const updateTask = async (req, res) => {
     const {
       title,
       description,
+      priority,
+      flag,
       status,
       assignee,
       dueDate,
@@ -168,8 +175,11 @@ export const updateTask = async (req, res) => {
       }
     }
 
+    // Update only fields that were provided
     if (title !== undefined) task.title = title;
     if (description !== undefined) task.description = description;
+    if (priority !== undefined) task.priority = priority;
+    if (flag !== undefined) task.flag = flag;
     if (status !== undefined) task.status = status;
     if (assignee !== undefined) task.assignee = assignee;
     if (dueDate !== undefined) task.dueDate = dueDate;

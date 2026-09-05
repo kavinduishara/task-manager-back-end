@@ -1,4 +1,4 @@
-import mongoose,{Schema} from "mongoose";
+import mongoose from "mongoose";
 
 const taskSchema = new mongoose.Schema(
   {
@@ -11,24 +11,48 @@ const taskSchema = new mongoose.Schema(
     description: {
       type: String,
       required: true,
+      trim: true,
+    },
+
+    priority: {
+      type: String,
+      required: true,
+      enum: ["Low", "Med", "High", "Urgent"],
+      default: "Low",
+    },
+
+    flag: {
+      type: String,
+      required: true,
+      enum: [
+        "feature",
+        "design",
+        "frontend",
+        "backend",
+        "development",
+        "devops",
+        "documentation",
+        "bug",
+      ],
+      default: "feature",
     },
 
     status: {
       type: String,
       required: true,
-      enum: ['TODO', 'IN_PROGRESS', 'DONE'],
-      default: 'TODO',
+      enum: ["TODO", "IN_PROGRESS", "DONE"],
+      default: "TODO",
     },
 
     creator: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
     },
 
     assignee: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: false,
     },
 
@@ -42,4 +66,4 @@ const taskSchema = new mongoose.Schema(
   }
 );
 
-export default mongoose.model('Task', taskSchema);
+export default mongoose.model("Task", taskSchema);
