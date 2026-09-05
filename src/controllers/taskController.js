@@ -1,5 +1,6 @@
 import Task from "../models/Task.js";
 import User from "../models/User.js";
+import { updateTaskInDb } from "../services/taskService.js";
 
 // GET /api/tasks
 export const getAllTasks = async (req, res) => {
@@ -120,7 +121,6 @@ export const addTasks = async (req, res) => {
   }
 };
 
-// PATCH /api/tasks/:id
 export const updateTask = async (req, res) => {
   try {
     const {
@@ -128,7 +128,6 @@ export const updateTask = async (req, res) => {
       description,
       priority,
       flag,
-      status,
       assignee,
       dueDate,
     } = req.body;
@@ -175,20 +174,19 @@ export const updateTask = async (req, res) => {
       }
     }
 
-    // Update only fields that were provided
-    if (title !== undefined) task.title = title;
-    if (description !== undefined) task.description = description;
-    if (priority !== undefined) task.priority = priority;
-    if (flag !== undefined) task.flag = flag;
-    if (status !== undefined) task.status = status;
-    if (assignee !== undefined) task.assignee = assignee;
-    if (dueDate !== undefined) task.dueDate = dueDate;
+    const updates = {
+      ...(title !== undefined && { title }),
+      ...(description !== undefined && { description }),
+      ...(priority !== undefined && { priority }),
+      ...(flag !== undefined && { flag }),
+      ...(assignee !== undefined && { assignee }),
+      ...(dueDate !== undefined && { dueDate }),
+    };
 
-    await task.save();
-
-    const updatedTask = await Task.findById(task._id)
-      .populate("creator", "name email")
-      .populate("assignee", "name email");
+    const updatedTask = await updateTaskInDb(
+      req.params.id,
+      updates
+    );
 
     res.status(200).json({
       message: "Task updated successfully",
@@ -203,6 +201,52 @@ export const updateTask = async (req, res) => {
   }
 };
 
+export const updateTaskStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    const requestedUser = req.user;
+
+    if (!status) {
+      return res.status(400).json({
+        message: "Status is required",
+      });
+    }
+
+    const task = await Task.findById(req.params.id);
+
+    if (!task) {
+      return res.status(404).json({
+        message: "Task not found",
+      });
+    }
+
+    // USER can only update their own tasks
+    if (
+      requestedUser.role !== "ADMIN" &&
+      task.assignee.toString() !== requestedUser.id
+    ) {
+      return res.status(403).json({
+        message: "You can only update tasks you created",
+      });
+    }
+
+    const updatedTask = await updateTaskInDb(
+      req.params.id,
+      { status }
+    );
+
+    res.status(200).json({
+      message: "Task status updated successfully",
+      task: updatedTask,
+    });
+  } catch (error) {
+    console.error("Error updating task status:", error);
+
+    res.status(500).json({
+      message: "Failed to update task status",
+    });
+  }
+};
 // DELETE /api/tasks/:id
 export const deleteTask = async (req, res) => {
   try {
@@ -239,3 +283,4 @@ export const deleteTask = async (req, res) => {
     });
   }
 };
+
