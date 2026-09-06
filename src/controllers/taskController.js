@@ -226,7 +226,7 @@ export const updateTaskStatus = async (req, res) => {
       task.assignee.toString() !== requestedUser.id
     ) {
       return res.status(403).json({
-        message: "You can only update tasks you created",
+        message: "You cannot change the status of tasks assigned to other users.",
       });
     }
 
