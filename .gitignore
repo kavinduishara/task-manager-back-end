@@ -1,4 +1,5 @@
 /node_modules
 
-
+terraform/terraform.tfstate
+terraform/.terraform
 .env
