@@ -36,6 +36,10 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_KEY }}
           script: |
-            docker compose pull
-            docker compose up -d --force-recreate
+            docker-compose down
+
+            docker-compose pull
+
+            docker-compose up -d --force-recreate
+
             docker image prune -f
