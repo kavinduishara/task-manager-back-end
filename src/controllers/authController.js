@@ -27,7 +27,7 @@ const registerUser = async (req, res) => {
       name,
       email,
       password: hashedPassword,
-      role:"User"
+      role:"USER"
     });
 
     const token = generateToken(user._id, res,user.role);
