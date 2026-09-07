@@ -1,16 +1,16 @@
 services:
   backend:
-    container_name: pos-backend
+    image: kavinduishara/taskmanager-backend:latest
+    container_name: taskmanager-backend
     environment:
       MONGODB_URI: ${MONGODB_URI}
       NODE_ENV: ${NODE_ENV}
       JWT_SECRET: ${JWT_SECRET}
     ports:
-      - "3001:3000"
+      - "3001:3001"
 
   frontend:
+    image: kavinduishara/taskmanager-frontend:latest
     container_name: taskmanager-frontend
-    environment:
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
     ports:
       - "3000:3000"
