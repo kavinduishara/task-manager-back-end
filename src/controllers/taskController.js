@@ -142,13 +142,19 @@ export const updateTask = async (req, res) => {
       });
     }
 
-    // USER can only edit their own tasks
+    const isSelfAssigningUnassignedTask =
+      requestedUser.role !== "ADMIN" &&
+      !task.assignee &&
+      assignee === requestedUser.id;
+
+    // USER can edit their own tasks or self-assign an unassigned task
     if (
       requestedUser.role !== "ADMIN" &&
-      task.creator.toString() !== requestedUser.id
+      task.creator.toString() !== requestedUser.id &&
+      !isSelfAssigningUnassignedTask
     ) {
       return res.status(403).json({
-        message: "You can only edit tasks you created",
+        message: "You can only edit tasks you created or self-assign unassigned tasks",
       });
     }
 
@@ -223,7 +229,7 @@ export const updateTaskStatus = async (req, res) => {
     // USER can only update their own tasks
     if (
       requestedUser.role !== "ADMIN" &&
-      task.assignee.toString() !== requestedUser.id
+      (!task.assignee || task.assignee.toString() !== requestedUser.id)
     ) {
       return res.status(403).json({
         message: "You cannot change the status of tasks assigned to other users.",
