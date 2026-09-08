@@ -1,5 +1,12 @@
 # Task Manager Backend
 
+## Technology Stack
+
+- Frontend  :Next.js
+- Backend   :Express.js
+- Database  :MongoDB
+
+
 ## Overview
 
 This repository contains the Node.js and Express API for the Task Manager application. It connects to MongoDB, authenticates users with JWTs stored in cookies, and provides authentication, task, and user endpoints under `/api`.
