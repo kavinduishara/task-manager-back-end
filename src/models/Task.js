@@ -1,5 +1,20 @@
 import mongoose from "mongoose";
 
+const subtaskSchema = new mongoose.Schema(
+  {
+    task: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    checked: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  { _id: true }
+);
+
 const taskSchema = new mongoose.Schema(
   {
     title: {
@@ -58,6 +73,11 @@ const taskSchema = new mongoose.Schema(
     dueDate: {
       type: Date,
       required: false,
+    },
+
+    subtasks: {
+      type: [subtaskSchema],
+      default: [],
     },
   },
   {

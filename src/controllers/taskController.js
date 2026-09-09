@@ -60,6 +60,7 @@ export const addTasks = async (req, res) => {
       status,
       assignee,
       dueDate,
+      subtasks,
     } = req.body;
 
     const requestedUser = req.user;
@@ -101,6 +102,7 @@ export const addTasks = async (req, res) => {
       status,
       assignee,
       dueDate,
+      ...(subtasks !== undefined && { subtasks }),
       creator: requestedUser.id,
     });
 
@@ -130,6 +132,7 @@ export const updateTask = async (req, res) => {
       flag,
       assignee,
       dueDate,
+      subtasks,
     } = req.body;
 
     const requestedUser = req.user;
@@ -187,6 +190,7 @@ export const updateTask = async (req, res) => {
       ...(flag !== undefined && { flag }),
       ...(assignee !== undefined && { assignee }),
       ...(dueDate !== undefined && { dueDate }),
+      ...(subtasks !== undefined && { subtasks }),
     };
 
     const updatedTask = await updateTaskInDb(
@@ -253,6 +257,153 @@ export const updateTaskStatus = async (req, res) => {
     });
   }
 };
+
+const canManageSubtasks = (task, user) =>
+  user.role === "ADMIN" ||
+  task.creator.toString() === user.id ||
+  task.assignee?.toString() === user.id;
+
+const findTaskForSubtaskMutation = async (req, res) => {
+  const task = await Task.findById(req.params.id);
+
+  if (!task) {
+    res.status(404).json({ message: "Task not found" });
+    return null;
+  }
+
+  if (!canManageSubtasks(task, req.user)) {
+    res.status(403).json({
+      message: "Only the task creator, assignee, or an administrator can manage subtasks",
+    });
+    return null;
+  }
+
+  return task;
+};
+
+// POST /api/tasks/:id/subtasks
+export const addSubtask = async (req, res) => {
+  try {
+    const task = await findTaskForSubtaskMutation(req, res);
+
+    if (!task) {
+      return;
+    }
+
+    const { task: subtaskText, checked = false } = req.body;
+
+    if (typeof subtaskText !== "string" || !subtaskText.trim()) {
+      return res.status(400).json({
+        message: "Subtask task is required",
+      });
+    }
+
+    if (typeof checked !== "boolean") {
+      return res.status(400).json({
+        message: "Subtask checked must be a boolean",
+      });
+    }
+
+    task.subtasks.push({ task: subtaskText.trim(), checked });
+    await task.save();
+
+    const updatedTask = await Task.findById(task._id)
+      .populate("creator", "name email")
+      .populate("assignee", "name email");
+
+    res.status(201).json({
+      message: "Subtask added successfully",
+      task: updatedTask,
+    });
+  } catch (error) {
+    console.error("Error adding subtask:", error);
+    res.status(500).json({ message: "Failed to add subtask" });
+  }
+};
+
+// PATCH /api/tasks/:id/subtasks/:subtaskId
+export const updateSubtask = async (req, res) => {
+  try {
+    const task = await findTaskForSubtaskMutation(req, res);
+
+    if (!task) {
+      return;
+    }
+
+    const subtask = task.subtasks.id(req.params.subtaskId);
+
+    if (!subtask) {
+      return res.status(404).json({ message: "Subtask not found" });
+    }
+
+    const { task: subtaskText, checked } = req.body;
+
+    if (subtaskText !== undefined) {
+      if (typeof subtaskText !== "string" || !subtaskText.trim()) {
+        return res.status(400).json({
+          message: "Subtask task must be a non-empty string",
+        });
+      }
+      subtask.task = subtaskText.trim();
+    }
+
+    if (checked !== undefined) {
+      if (typeof checked !== "boolean") {
+        return res.status(400).json({
+          message: "Subtask checked must be a boolean",
+        });
+      }
+      subtask.checked = checked;
+    }
+
+    await task.save();
+
+    const updatedTask = await Task.findById(task._id)
+      .populate("creator", "name email")
+      .populate("assignee", "name email");
+
+    res.status(200).json({
+      message: "Subtask updated successfully",
+      task: updatedTask,
+    });
+  } catch (error) {
+    console.error("Error updating subtask:", error);
+    res.status(500).json({ message: "Failed to update subtask" });
+  }
+};
+
+// DELETE /api/tasks/:id/subtasks/:subtaskId
+export const removeSubtask = async (req, res) => {
+  try {
+    const task = await findTaskForSubtaskMutation(req, res);
+
+    if (!task) {
+      return;
+    }
+
+    const subtask = task.subtasks.id(req.params.subtaskId);
+
+    if (!subtask) {
+      return res.status(404).json({ message: "Subtask not found" });
+    }
+
+    subtask.deleteOne();
+    await task.save();
+
+    const updatedTask = await Task.findById(task._id)
+      .populate("creator", "name email")
+      .populate("assignee", "name email");
+
+    res.status(200).json({
+      message: "Subtask removed successfully",
+      task: updatedTask,
+    });
+  } catch (error) {
+    console.error("Error removing subtask:", error);
+    res.status(500).json({ message: "Failed to remove subtask" });
+  }
+};
+
 // DELETE /api/tasks/:id
 export const deleteTask = async (req, res) => {
   try {

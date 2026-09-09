@@ -80,6 +80,18 @@ The API prefix is `/api`.
 | Tasks | `/api/tasks` | Authenticated users |
 | Users | `/api/users` | Authenticated users, with role checks where configured |
 
+### Subtasks
+
+Tasks include `subtasks`, an array of objects shaped like `{ task, checked }`.
+The task creator, task assignee, and any administrator can manage a task's
+subtasks. Other authenticated users receive `403 Forbidden`.
+
+| Operation | Method | Path | Body |
+| --- | --- | --- | --- |
+| Add subtask | `POST` | `/api/tasks/:id/subtasks` | `{ "task": "Write tests", "checked": false }` |
+| Check or edit subtask | `PATCH` | `/api/tasks/:id/subtasks/:subtaskId` | `{ "checked": true }` or `{ "task": "Updated text" }` |
+| Remove subtask | `DELETE` | `/api/tasks/:id/subtasks/:subtaskId` | None |
+
 ## Deployment Files
 
 ### Dockerfile
