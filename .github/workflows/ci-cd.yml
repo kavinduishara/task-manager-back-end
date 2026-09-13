@@ -23,7 +23,7 @@ jobs:
           key: ${{ secrets.EC2_KEY }}
           port: 22
           source: "scripts/*"
-          target: "/home/ubuntu/scripts/"
+          target: "/home/ubuntu/"
 
       - name: Make Scripts Executable
         uses: appleboy/ssh-action@v1
