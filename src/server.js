@@ -29,6 +29,11 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use("/api/auth",authRoute)
+app.get("/api/health", (req, res) => {
+  res.status(200).json({
+    message: "server says i am okay",
+  });
+});
 
 app.use(authMiddleware)
 app.use("/api/tasks", taskRoute)
