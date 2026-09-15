@@ -1,17 +1,13 @@
 #!/bin/bash
 
-source ./health-check-lib.sh
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/health-check-lib.sh"
 
 HEALTHY=true
 
 printf "\n==========================================\n"
 printf "           SERVER HEALTH CHECK\n"
 printf "==========================================\n"
-
-
-# ==================================================
-# SYSTEM
-# ==================================================
 
 printf "\nSYSTEM\n"
 
@@ -31,13 +27,7 @@ printf "%-20s : %s\n" \
     "Load Average" \
     "$(uptime | awk -F'load average: ' '{print $2}')"
 
-
-# ==================================================
-# SERVICES
-# ==================================================
-
 printf "\nSERVICES\n"
-
 
 if check_nginx; then
     printf "%-20s : %s\n" "Nginx" "OK"
@@ -46,7 +36,6 @@ else
     HEALTHY=false
 fi
 
-
 if check_docker; then
     printf "%-20s : %s\n" "Docker" "OK"
 else
@@ -54,13 +43,7 @@ else
     HEALTHY=false
 fi
 
-
-# ==================================================
-# APPLICATIONS
-# ==================================================
-
 printf "\nAPPLICATIONS\n"
-
 
 if check_frontend; then
     printf "%-20s : %s\n" "Frontend" "OK"
@@ -69,18 +52,12 @@ else
     HEALTHY=false
 fi
 
-
 if check_backend; then
     printf "%-20s : %s\n" "Backend" "OK"
 else
     printf "%-20s : %s\n" "Backend" "FAILED"
     HEALTHY=false
 fi
-
-
-# ==================================================
-# RESULT
-# ==================================================
 
 printf "\n==========================================\n"
 

@@ -1,6 +1,15 @@
 #!/bin/bash
 
-source "./health-check-lib.sh"
+# ==================================================
+# PATHS
+# ==================================================
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+source "$SCRIPT_DIR/health-check-lib.sh"
+
+# Change this to the directory containing docker-compose.yml
+COMPOSE_DIR="/home/ubuntu"
 
 
 # ==================================================
@@ -10,6 +19,37 @@ source "./health-check-lib.sh"
 log() {
     printf "%s %s\n" "$(date '+%Y-%m-%d %H:%M:%S')" "$1"
 }
+
+
+# ==================================================
+# RESTART DOCKER COMPOSE SERVICE
+# ==================================================
+
+restart_service() {
+
+    local service="$1"
+
+    log "[ACTION] Restarting $service..."
+
+    if cd "$COMPOSE_DIR" && docker-compose restart "$service"; then
+
+        log "[SUCCESS] $service restart command completed."
+
+        return 0
+
+    else
+
+        log "[FAILED] Could not restart $service."
+
+        return 1
+
+    fi
+}
+
+
+# ==================================================
+# CHECK NGINX
+# ==================================================
 
 if check_nginx; then
 
@@ -78,19 +118,14 @@ if check_frontend; then
 else
 
     log "[FAILED] Frontend is unavailable."
-    log "[ACTION] Restarting frontend..."
 
-    if docker compose restart frontend; then
+    if restart_service "frontend"; then
 
         if check_frontend; then
             log "[SUCCESS] Frontend recovered."
         else
             log "[FAILED] Frontend restart completed, but health check failed."
         fi
-
-    else
-
-        log "[FAILED] Could not restart frontend."
 
     fi
 
@@ -108,9 +143,8 @@ if check_backend; then
 else
 
     log "[FAILED] Backend is unavailable."
-    log "[ACTION] Restarting backend..."
 
-    if docker compose restart backend; then
+    if restart_service "backend"; then
 
         if check_backend; then
             log "[SUCCESS] Backend recovered."
@@ -118,22 +152,31 @@ else
             log "[FAILED] Backend restart completed, but health check failed."
         fi
 
-    else
-
-        log "[FAILED] Could not restart backend."
-
     fi
 
 fi
+
+
+# ==================================================
+# FINAL HEALTH CHECK
+# ==================================================
+
+log "=========================================="
+log "       RUNNING FINAL HEALTH CHECK"
+log "=========================================="
 
 
 if check_all; then
 
     log "[SUCCESS] Server is healthy after self-healing."
 
+    exit 0
+
 else
 
     log "[FAILED] Server is still unhealthy."
     log "[WARNING] Manual investigation required."
+
+    exit 1
 
 fi
